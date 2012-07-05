@@ -4,11 +4,9 @@ module GeneticAlgorithm
     BINARY = 2
     attr_accessor :bit_string
 
-    def initialize(space_bounds, seed)
+    def initialize(space_bounds)
       @verbosity = $ga_verbosity || 0
       @space_bounds = space_bounds
-      @seed = seed
-      srand(@seed)
       nil
     end
 
@@ -32,7 +30,7 @@ module GeneticAlgorithm
 
       #printf " #{raw_int_selection} "
 
-      puts selection.each_with_index.map { |x, i| hyp_space[i][x] }.inspect.green  if @verbosity >= 3
+      puts selection.each_with_index.map { |x, i| hyp_space[i][x] }.inspect.red  if @verbosity >= 3
 
       #Using the method that adds a decode is significantly slower, so it's just here for show.
       #This should eventually be moved to a test case
@@ -45,9 +43,10 @@ module GeneticAlgorithm
       BitString.decode(@space_bounds, bit_string.to_i(2))
     end
 
-    def inspect
-      selection
+    def to_s
+      BitString.decode(@space_bounds, bit_string.to_i(2)).to_s
     end
+    alias_method :inspect, :to_s
 
 
     private

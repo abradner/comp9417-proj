@@ -4,7 +4,6 @@ module GeneticAlgorithm
 
     attr_accessor :seed, :working_dir, :in_file
     attr_reader :pool
-    @@fitness_tests = {}
 
     def initialize (fitness_measure, fitness_threshold, p, r, m)
       @verbosity = $ga_verbosity || 0
@@ -15,16 +14,27 @@ module GeneticAlgorithm
       @mutation_factor = m
       @hypotheses = []
       @attributes = []
-      #@seed = srand
+      @spaced_instances = []
+      @test_instances = []
+      @real_instances = []
     end
 
     def run
-      raise ArgumentError 'no input file. use #in_file= to specify a file'  unless @in_file
-      puts "Initialising".blue if @verbosity >= 1
+      raise ArgumentError 'no input file. use #in_file= to specify a file' unless @in_file
+      puts "Initialising, Verbosity #{@verbosity}".blue if @verbosity >= 1
       load_relationship
+      wait_for_user if @verbosity >= 5
       load_attributes
+      wait_for_user if @verbosity >= 5
       discover_hypothesis_space
+      wait_for_user if @verbosity >= 5
+      convert_instances_to_space
+      wait_for_user if @verbosity >= 5
+      separate_test_and_unknown_instances
+      wait_for_user if @verbosity >= 5
       build_hypos
+      wait_for_user if @verbosity >= 5
+      evolve
 
       #build_hypos
       #@@fitness_tests[rule].call answer, related_answer, checker_params
@@ -39,6 +49,11 @@ module GeneticAlgorithm
       #select_best
     end
 
+    def wait_for_user
+      printf 'Enter to continue'
+      $stdin.gets
+    end
+
     def load_relationship
       puts "Loading Relationship".blue if @verbosity >= 1
       raise if @in_file.nil?
@@ -47,22 +62,14 @@ module GeneticAlgorithm
       @rel.parse(File.open(@in_file).read)
     end
 
-
-    def self.register_fitness_test(rule, block)
-      # Call register_fitness_test with the rule 'code' of your check.
-      # Supply a block that takes the hypothesis and returns a value relating
-      # to the fitness of the hypothesis
-      @@fitness_tests[rule] = block
-    end
-
     def load_attributes
       puts "Loading Attributes".blue if @verbosity >= 1
       @attributes = @rel.attributes
-      puts "#{@attributes.inspect}".cyan if @verbosity >= 2
+      puts "Attributes: #{@attributes.map { |a| a.name }.inspect}".cyan if @verbosity >= 2
     end
 
     def discover_hypothesis_space()
-      puts "Discovering Hypothesis Space".blue if @verbosity >= 1
+      puts "Discovering Hypothesis Space".blue 0 if @verbosity >= 1
       @hypothesis_space = []
       @attributes.each_with_index do |attr, idx|
         attribute_space = []
@@ -77,21 +84,40 @@ module GeneticAlgorithm
         attribute_space.uniq!
         @hypothesis_space << attribute_space
       end
-      pretty_explain_hyp_space if @verbosity >= 2
+      puts pretty_explain_hyp_space if @verbosity >= 2
     end
 
+    def convert_instances_to_space
+      puts "Converting #{@rel.instances.count} instances to hypothesis space".blue if @verbosity >= 1
+      @rel.instances.each do |inst|
+        spaced_inst = inst.each_with_index.map { |x, i| @hypothesis_space[i].find_index(x) }
+        @spaced_instances << spaced_inst
+        puts "#{spaced_inst.inspect}".yellow if @verbosity >= 4
+      end
+   end
+
+    def separate_test_and_unknown_instances
+      puts "Separating Test and Unknown instances".blue if @verbosity >= 1
+      @spaced_instances.each do |inst|
+        if inst.index(nil)  # If we can find an index for an attribute with an unknown {?} value (nil in the space)
+          @real_instances << inst
+        else
+          @test_instances << inst
+        end
+      end
+      puts "#{@test_instances.count} Test and #{@real_instances.count} Unknown instances".cyan if @verbosity >= 2
+    end
 
     def build_hypos
-      @pool = HypothesisPool.new(@hypothesis_space, @seed)
+      @pool = HypothesisPool.new(@hypothesis_space, @test_instances, @seed)
       @pool.build(@pool_size)
     end
 
-    def evaluate(fitness)
-
-    end
-
     def evolve
-
+      @pool.iterate
+      puts @pool.ranked_pool.inspect
+      puts 'fittest-'
+      puts @pool.fittest(-1).map { |h| h.selection.each_with_index.map { |x, i| @hypothesis_space[i][x.to_i] } }.inspect.green
     end
 
 
@@ -104,7 +130,7 @@ module GeneticAlgorithm
     end
 
     def pretty_explain_hyp_space
-      "#{@hypothesis_space.inspect}".cyan
+      "Hypothesis Space: #{@hypothesis_space.inspect}".cyan
     end
 
     def pretty_present_fittest_hyp
@@ -112,10 +138,6 @@ module GeneticAlgorithm
 
     end
 
-
-    register_fitness_test 'something', lambda { |*params|
-      0
-    }
 
   end
 end
