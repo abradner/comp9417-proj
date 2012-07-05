@@ -1,0 +1,16 @@
+PATH
+  remote: ../rarff
+  specs:
+    rarff (0.2.4)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    colorize (0.5.8)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  colorize
+  rarff!
