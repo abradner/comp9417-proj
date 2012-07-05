@@ -20,7 +20,7 @@ module GeneticAlgorithm
 
     def run
       raise ArgumentError 'no input file. use #in_file= to specify a file'  unless @in_file
-      puts "Initialising".blue if @verbosity > 0
+      puts "Initialising".blue if @verbosity >= 1
       load_relationship
       load_attributes
       discover_hypothesis_space
@@ -40,7 +40,7 @@ module GeneticAlgorithm
     end
 
     def load_relationship
-      puts "Loading Relationship".blue if @verbosity > 0
+      puts "Loading Relationship".blue if @verbosity >= 1
       raise if @in_file.nil?
 
       @rel = Rarff::Relation.new
@@ -56,13 +56,13 @@ module GeneticAlgorithm
     end
 
     def load_attributes
-      puts "Loading Attributes".blue if @verbosity > 0
+      puts "Loading Attributes".blue if @verbosity >= 1
       @attributes = @rel.attributes
-      puts "#{@attributes.inspect}".cyan
+      puts "#{@attributes.inspect}".cyan if @verbosity >= 2
     end
 
     def discover_hypothesis_space()
-      puts "Discovering Hypothesis Space".blue if @verbosity > 0
+      puts "Discovering Hypothesis Space".blue if @verbosity >= 1
       @hypothesis_space = []
       @attributes.each_with_index do |attr, idx|
         attribute_space = []
@@ -77,7 +77,7 @@ module GeneticAlgorithm
         attribute_space.uniq!
         @hypothesis_space << attribute_space
       end
-      pretty_explain_hyp_space if @verbosity > 1
+      pretty_explain_hyp_space if @verbosity >= 2
     end
 
 
@@ -100,12 +100,11 @@ module GeneticAlgorithm
     end
 
     def pretty_explain_rel
-      puts @rel.in
+      @rel.in
     end
 
     def pretty_explain_hyp_space
-      puts "#{@hypothesis_space.inspect}".cyan
-
+      "#{@hypothesis_space.inspect}".cyan
     end
 
     def pretty_present_fittest_hyp

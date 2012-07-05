@@ -13,7 +13,7 @@ module GeneticAlgorithm
     end
 
     def build_from_space(hyp_space, pad_length)
-      printf 'Building Hypothesis:'.yellow if @verbosity >= 2
+      printf 'Building Hypothesis:'.yellow if @verbosity >= 3
       selection = []
       padding = ""
       hyp_space.each do |attr|
@@ -22,17 +22,17 @@ module GeneticAlgorithm
 
       raw_int_selection = BitString.encode(@space_bounds, selection)
 
-      printf " #{selection.inspect} "  if @verbosity >= 3
+      printf " #{selection.inspect} "  if @verbosity >= 4
 
       raw_bin_selection = raw_int_selection.to_s(BINARY)
       padding << "0" * (pad_length - raw_bin_selection.length)
       @bit_string = padding + raw_bin_selection #Todo pad bin string out to max length
 
-      printf " #@bit_string ".yellow  if @verbosity >= 3
+      printf " #@bit_string ".yellow  if @verbosity >= 4
 
       #printf " #{raw_int_selection} "
 
-      puts selection.each_with_index.map { |x, i| hyp_space[i][x] }.inspect.green  if @verbosity >= 2
+      puts selection.each_with_index.map { |x, i| hyp_space[i][x] }.inspect.green  if @verbosity >= 3
 
       #Using the method that adds a decode is significantly slower, so it's just here for show.
       #This should eventually be moved to a test case

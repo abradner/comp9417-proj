@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'genetic_algorithm'
-$ga_verbosity = 3
+$ga_verbosity = 1
 
 ga = GeneticAlgorithm::Controller.new(nil, nil, 10000, nil, nil)
 ga.seed = 2
