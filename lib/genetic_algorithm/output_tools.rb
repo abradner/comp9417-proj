@@ -5,5 +5,10 @@ module GeneticAlgorithm
       printf((completion < 100 ? "\rProgress:  %02d\%" : "\rProgress: %3d\%"), completion)
       $stdout.flush
     end
+    def self.print_generation(n)
+      digits = n.to_s.length
+      printf("\rGeneration:  %0#{digits}d", n)
+      $stdout.flush
+    end
   end
 end

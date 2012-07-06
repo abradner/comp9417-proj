@@ -1,8 +1,9 @@
 module GeneticAlgorithm
   class Controller
     CLASS_ATTRIBUTE = 'class'
+    THREADS = 4
 
-    attr_accessor :seed, :working_dir, :in_file
+    attr_accessor :seed, :working_dir, :in_file, :iterations
     attr_reader :pool
 
     def initialize (fitness_measure, fitness_threshold, p, r, m)
@@ -21,7 +22,7 @@ module GeneticAlgorithm
 
     def run
       raise ArgumentError 'no input file. use #in_file= to specify a file' unless @in_file
-      puts "Initialising, Verbosity #{@verbosity}".blue if @verbosity >= 1
+      puts "Initialising, with seed #@seed using #{THREADS} threads and Verbosity #{@verbosity}".blue if @verbosity >= 1
       load_relationship
       wait_for_user if @verbosity >= 5
       load_attributes
@@ -50,8 +51,7 @@ module GeneticAlgorithm
     end
 
     def wait_for_user
-      printf 'Enter to continue'
-      $stdin.gets
+      $stdin.gets 'Enter to continue'
     end
 
     def load_relationship
@@ -94,12 +94,12 @@ module GeneticAlgorithm
         @spaced_instances << spaced_inst
         puts "#{spaced_inst.inspect}".yellow if @verbosity >= 4
       end
-   end
+    end
 
     def separate_test_and_unknown_instances
       puts "Separating Test and Unknown instances".blue if @verbosity >= 1
       @spaced_instances.each do |inst|
-        if inst.index(nil)  # If we can find an index for an attribute with an unknown {?} value (nil in the space)
+        if inst.index(nil) # If we can find an index for an attribute with an unknown {?} value (nil in the space)
           @real_instances << inst
         else
           @test_instances << inst
@@ -109,15 +109,31 @@ module GeneticAlgorithm
     end
 
     def build_hypos
-      @pool = HypothesisPool.new(@hypothesis_space, @test_instances, @seed)
-      @pool.build(@pool_size)
+      @pool = HypothesisPool.new(@hypothesis_space, @test_instances, @seed, @probability, @mutation_factor, THREADS)
+      @pool.populate(@pool_size)
     end
 
     def evolve
-      @pool.iterate
-      puts @pool.ranked_pool.inspect
-      puts 'fittest-'
-      puts @pool.fittest(-1).map { |h| h.selection.each_with_index.map { |x, i| @hypothesis_space[i][x.to_i] } }.inspect.green
+      @iterations.times do
+        @pool.iterate
+
+        if @verbosity >= 3
+          @pool.ranked_pool.each_with_index do |f, idx|
+            next if f.empty?
+            puts "#{idx}: #{f.inspect}".yellow
+          end
+        end
+
+        fittest = @pool.fittest(-1)
+        if @verbosity >= 2
+          puts "Fittest:".cyan
+
+          human_fittest = fittest.map { |h| h.selection.each_with_index.map { |x, i| @hypothesis_space[i][x.to_i] } }
+          human_fittest.each do |f|
+            puts f.inspect.green
+          end
+        end
+      end
     end
 
 
