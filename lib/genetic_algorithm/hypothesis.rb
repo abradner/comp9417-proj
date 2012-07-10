@@ -87,7 +87,7 @@ module GeneticAlgorithm
     private
 
     def invert(char)
-      char.eql?(0) ? 1 : 0
+      char.eql?('0') ? '1' : '0'
     end
 
   end

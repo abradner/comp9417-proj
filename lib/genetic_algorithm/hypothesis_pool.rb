@@ -61,7 +61,8 @@ module GeneticAlgorithm
 
     def build(number)
       puts "Building #{number} random hypotheses".blue if @verbosity >= 1
-      one_percent = number/100
+      one_percent = number/100.0
+
 
       #find out how long each chromosome should be
 
@@ -110,6 +111,10 @@ module GeneticAlgorithm
       else
         n.nil? ? @pool.first : @pool.first(n)
       end
+    end
+
+    def best_fitness
+      @ranked_pool.find_index { |x| not x.empty? }
     end
 
     #This method is not a true inspect - it doesn't return a string, rather directly puts.
@@ -252,7 +257,7 @@ module GeneticAlgorithm
       puts "Sorting Pool".yellow if @verbosity >=2
       num_instances = @test_count
       sorted_pool = Array.new(2*(num_instances+1)) { [] } # create a (large) 2D array for storing instances
-      one_percent = @pool.count/100
+      one_percent = @pool.count/100.0
       number = @pool.count
       OutputTools.print_percentage(0, 100) if @verbosity >= 2
       @pool.each_with_index do |hyp, n|

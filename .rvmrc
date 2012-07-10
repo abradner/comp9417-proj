@@ -1,1 +1,3 @@
-rvm rbx@9417-proj --create
+#rvm rbx@9417-proj --create
+rvm 1.8.7-p302@9417-proj --create
+#rvm 1.9.3-p194@9417-proj --create

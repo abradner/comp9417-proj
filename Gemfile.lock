@@ -1,5 +1,6 @@
-PATH
-  remote: ../rarff
+GIT
+  remote: git://github.com/abradner/rarff.git
+  revision: 4523ae819fa93e4dc000d4605b2af1bd765a4819
   specs:
     rarff (0.2.4)
 
